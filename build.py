@@ -28,6 +28,13 @@ def localize_image(url):
         url = "https:" + url
     if url in _img_cache:
         return _img_cache[url]
+    if not url.startswith("http"):
+        # bare filename -> pre-placed file in content/img-cache
+        src = ROOT / "content" / "img-cache" / url
+        shutil.copy(src, ASSETS / url)
+        local = f"/assets/img/{url}"
+        _img_cache[url] = local
+        return local
     clean = url.split("?")[0]
     ext = os.path.splitext(clean)[1].lower() or ".jpg"
     if ext not in (".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"):
@@ -75,58 +82,108 @@ def rewrite_body(body):
 
 # ---------------- layout ----------------
 CSS = """
+@font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-book.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-book-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-medium.woff2) format('woff2');font-weight:500 600;font-style:normal;font-display:swap}
+@font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-bold.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-ultra.woff2) format('woff2');font-weight:800 900;font-style:normal;font-display:swap}
 :root{--teal:#108474;--teal-d:#0b6154;--blue:#347DEC;--yellow:#fbcd0a;--ink:#131b22;--muted:#5a6672;--cream:#faf7f2;--line:#e8e2d8;--amz:#ff9900}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;font-family:'Open Sans',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.65}
-h1,h2,h3,h4{font-family:'Montserrat',sans-serif;font-weight:800;line-height:1.2;margin:0 0 .5em}
-a{color:var(--teal)}img{max-width:100%;height:auto;border-radius:12px}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+body{margin:0;font-family:'Gotham',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,sans-serif;color:var(--ink);background:#fff;line-height:1.65}
+h1,h2,h3,h4{font-family:inherit;font-weight:800;line-height:1.08;letter-spacing:-.02em;margin:0 0 .5em}
+h1{font-size:clamp(2.2rem,5vw,3.4rem)}
+a{color:var(--teal)}img{max-width:100%;height:auto;border-radius:8px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
 header.site{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
-header.site .wrap{display:flex;align-items:center;gap:24px;height:64px}
-.logo{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.05rem;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:10px}
-.logo img{width:32px;height:32px;border-radius:6px}
-nav.main{margin-left:auto;display:flex;gap:20px;flex-wrap:wrap}
+header.site .wrap{display:flex;align-items:center;gap:24px;height:84px}
+.logo{display:flex;align-items:center;text-decoration:none}
+.logo img{height:52px;width:auto;border-radius:0;display:block}
+nav.main{margin-left:auto;display:flex;gap:22px;flex-wrap:wrap;align-items:center}
 nav.main a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.92rem}
 nav.main a:hover{color:var(--teal)}
-.btn{display:inline-block;background:var(--teal);color:#fff!important;font-family:'Montserrat',sans-serif;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:999px;transition:.15s}
-.btn:hover{background:var(--teal-d)}
-.btn.amazon{background:var(--ink)}
-.btn.amazon:hover{background:#000}
-.btn.amazon .a{color:var(--amz)}
-.hero{background:linear-gradient(135deg,var(--teal) 0%,#0d6e61 60%,#0b5d52 100%);color:#fff;text-align:center;padding:84px 20px 92px}
+.btn{display:inline-block;background:#000;color:#fff!important;font-weight:500;font-size:.9rem;text-decoration:none;padding:12px 26px;border-radius:999px;transition:.15s}
+.btn:hover{background:#222;transform:scale(1.03)}
+.btn .a,.btn.amazon .a{color:var(--amz)}
+.hero .btn,.band .btn{background:var(--yellow);color:var(--ink)!important}
+.hero .btn:hover,.band .btn:hover{background:#e9be00}
+.hero .btn .a,.band .btn .a{color:var(--ink)}
+.hero{background:#000;color:#fff;text-align:center;padding:84px 20px 92px}
 .hero h1{font-size:clamp(2rem,5vw,3.3rem);max-width:820px;margin:0 auto .35em}
 .hero p.tag{font-size:clamp(1.05rem,2.2vw,1.35rem);opacity:.92;margin:0 auto 1.6em;max-width:640px}
 .hero .note{margin-top:18px;font-size:.9rem;opacity:.85}
-.pill{display:inline-block;background:var(--yellow);color:var(--ink);font-family:'Montserrat',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin-bottom:22px}
+.pill{display:inline-block;background:var(--yellow);color:var(--ink);font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:6px;margin-bottom:22px}
 section{padding:64px 0}
-.grid{display:grid;gap:28px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.15s;text-decoration:none;color:var(--ink)}
-.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(16,132,116,.13)}
-.card img{border-radius:0;aspect-ratio:1/1;object-fit:cover;width:100%}
-.card .pad{padding:18px 18px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
-.card h3{font-size:1.05rem;margin:0}
-.card p{margin:0;font-size:.88rem;color:var(--muted);flex:1}
-.card .cta{font-weight:700;color:var(--teal);font-size:.9rem}
+.grid{display:grid;gap:36px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.grid .tile img{aspect-ratio:1/1}
 .split{display:grid;gap:48px;grid-template-columns:1fr 1fr;align-items:center}
 @media(max-width:760px){.split{grid-template-columns:1fr}}
-.product-hero{padding:56px 0}
-.price{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--muted);margin:6px 0 18px}
-.retired-note{background:#fff8e1;border:1px solid #f0dd9a;border-radius:12px;padding:14px 18px;font-size:.92rem;margin:18px 0}
+.product-hero{padding:72px 0}
+.price{font-weight:700;color:var(--ink);font-size:1.15rem;margin:6px 0 18px}
+.retired-note{background:var(--yellow);border-radius:6px;padding:14px 18px;font-size:.92rem;margin:18px 0}
 .prose{max-width:760px}
 .prose img{margin:18px 0}
-.prose h2{margin-top:1.6em;font-size:1.5rem}.prose h3{margin-top:1.4em;font-size:1.2rem}
+.prose h2{margin-top:1.6em;font-size:1.8rem}.prose h3{margin-top:1.4em;font-size:1.3rem}
 .prose table{border-collapse:collapse;width:100%;font-size:.92rem}.prose td,.prose th{border:1px solid var(--line);padding:8px 10px;text-align:left}
-.meta{color:var(--muted);font-size:.9rem;margin-bottom:26px}
+.meta{color:var(--ink);font-size:.9rem;margin-bottom:26px}
+.page-lead{max-width:640px;font-size:1.1rem}
+.post-cta{margin-top:50px;padding:36px;background:var(--yellow);border-radius:6px;max-width:760px}
+.post-cta h3{font-size:1.5rem}
 .band{background:var(--ink);color:#fff;text-align:center;padding:70px 20px}
 .band h2{color:#fff}
-footer.site{background:#fff;border-top:1px solid var(--line);padding:44px 0;font-size:.9rem;color:var(--muted)}
+footer.site{background:#000;border-top:1px solid rgba(255,255,255,.2);padding:64px 0;font-size:.9rem;color:rgba(255,255,255,.65)}
 footer.site .cols{display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between}
-footer.site a{color:var(--muted);text-decoration:none;display:block;margin-bottom:8px}
-footer.site a:hover{color:var(--teal)}
-footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
-.crumbs{font-size:.85rem;color:var(--muted);padding-top:26px}
-.crumbs a{color:var(--muted)}
-.blog-list .card img{aspect-ratio:16/9}
+footer.site a{color:rgba(255,255,255,.65);text-decoration:none;display:block;margin-bottom:8px}
+footer.site a:hover{color:var(--yellow)}
+footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:#fff}
+.crumbs{font-size:.85rem;color:var(--ink);padding-top:26px}
+.crumbs a{color:var(--ink)}
+.blog-list .tile img{aspect-ratio:16/9}
+.blog-list .tile h3{font-size:1.25rem}
+/* ---- homepage (CAH-style layout, CCL colors) ---- */
+.home-hero{background:#fff;color:var(--ink);padding:84px 0 150px}
+.home-hero h1{font-size:clamp(2.8rem,8vw,5.6rem);max-width:1000px;margin:0 0 .3em}
+.home-hero h1 em{font-style:normal;box-shadow:inset 0 -0.28em var(--yellow)}
+.home-hero p.tag{font-size:clamp(1.15rem,2.4vw,1.55rem);color:var(--ink);margin:0 0 2em;max-width:680px}
+.home-hero .note{margin-top:22px;font-size:.95rem;color:var(--ink)}
+.home-h2{font-size:clamp(2.3rem,5vw,3.6rem)}
+.play{background:#000;color:#fff;height:340vh;position:relative}
+.play-sticky{position:sticky;top:0;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+.play-sticky>.wrap{width:100%}
+.play .split{align-items:center}
+.play p.big{font-size:clamp(1.15rem,2vw,1.4rem);max-width:520px}
+.play-cards{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.pcard{width:225px;aspect-ratio:5/7;border-radius:16px;padding:22px 20px;font-weight:700;font-size:1.02rem;line-height:1.35;display:flex;flex-direction:column;justify-content:space-between}
+.pcard .brand{font-size:.62rem;font-weight:800;letter-spacing:.02em;text-align:center}
+.pcard.prompt{background:var(--blue);color:#fff;transform:rotate(-6deg)}
+.pcard.answer{background:#fff;color:var(--blue)}
+.answer-stack{position:relative;width:225px;aspect-ratio:5/7;transform:rotate(3deg) translateY(16px)}
+.answer-stack .pcard{position:absolute;inset:0;opacity:0;transform:rotate(75deg);transform-origin:50% 90%;will-change:transform,opacity}
+.answer-stack .pcard:first-child{transform:none;opacity:1}
+.buy-block{padding:110px 0}
+.buy-block .split{align-items:center}
+.buy-block img{border:1px solid var(--line);border-radius:8px}
+.buy-block .price{font-size:1.3rem;color:var(--ink)}
+.buy-block p{font-size:1.1rem}
+.games-block{background:var(--yellow);padding:110px 0}
+.games-block p.lead{max-width:640px;font-size:1.15rem}
+.tiles{display:grid;gap:36px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:48px}
+.tile{display:block;text-decoration:none;color:var(--ink)}
+.tile img{border-radius:14px;aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .15s}
+.tile:hover img{transform:scale(1.03)}
+.tile h3{font-size:clamp(1.3rem,2vw,1.7rem);margin:18px 0 6px}
+.tile p{margin:0;font-size:.95rem}
+.faq{background:#000;color:#fff;padding:110px 0}
+.faq .inner{max-width:none}
+.faq .home-h2{font-size:clamp(2.4rem,5.5vw,3.6rem);margin-bottom:.7em}
+.faq details{border-bottom:1px solid rgba(255,255,255,.5)}
+.faq details:first-of-type{border-top:1px solid rgba(255,255,255,.5)}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:19px 0;font-weight:700;font-size:clamp(1.1rem,2vw,1.45rem)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:"+";font-size:1.8rem;font-weight:400;color:#fff;flex-shrink:0;line-height:1}
+.faq details[open] summary:after{content:"\\2212"}
+.faq .a-body{padding:0 0 26px;color:rgba(255,255,255,.75);max-width:680px}
+.faq .a-body a{font-weight:600;color:var(--yellow)}
+@media(max-width:760px){header.site .wrap{height:64px}.logo img{height:38px}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}}
 """
 
 def page(title, desc, path, body, jsonld=None, ogimg=None):
@@ -147,19 +204,17 @@ def page(title, desc, path, body, jsonld=None, ogimg=None):
 <meta property="og:type" content="website">
 <meta property="og:url" content="{canonical}">{og}
 <link rel="icon" href="/assets/img/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/gotham-book.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/gotham-ultra.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CSS}</style>
 {ld}
 </head>
 <body>
 <header class="site"><div class="wrap">
-<a class="logo" href="/"><img src="/assets/img/favicon.png" alt="Cards Christians Like logo">Cards Christians Like</a>
+<a class="logo" href="/"><img src="/assets/img/christians-like-logo.png" alt="Christians Like – home"></a>
 <nav class="main">
-<a href="/collections/games">Games</a>
-<a href="/collections/expansions-1">Expansions</a>
-<a href="/blogs/news">Blog</a>
-<a class="btn amazon" style="padding:9px 18px;font-size:.85rem" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Shop on <span class="a">Amazon</span></a>
+<a href="/collections/games">Shop</a>
+<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
 </nav>
 </div></header>
 {body}
@@ -172,10 +227,9 @@ def page(title, desc, path, body, jsonld=None, ogimg=None):
 </div>
 <div><h4>Shop</h4>
 <a href="/products/cards-christians-like">Cards Christians Like</a>
-<a href="/products/expansion-box-vol-1">Expansion Box Vol. 1</a>
-<a href="/products/cast-the-first-stone">Cast The First Stone</a>
-<a href="/products/holy-guacamole">Holy Guacamole</a>
 <a href="/products/discernment">Discernment</a>
+<a href="/products/holy-guacamole">Holy Guacamole</a>
+<a href="/products/cast-the-first-stone">Cast The First Stone</a>
 </div>
 <div><h4>Company</h4>
 <a href="/blogs/news">Blog</a>
@@ -206,13 +260,22 @@ if fav.startswith("/assets"):
 else:
     print("  !! favicon fallback")
 
+# header brand logo (local asset, not from Shopify)
+shutil.copy(ROOT / "content/img-cache/christians-like-logo.png", ASSETS / "christians-like-logo.png")
+
+# self-hosted brand fonts
+FONTS = DIST / "assets" / "fonts"
+FONTS.mkdir(parents=True, exist_ok=True)
+for f in (ROOT / "content/fonts").glob("*.woff2"):
+    shutil.copy(f, FONTS / f.name)
+
 sitemap_urls = []
 
 # ---------------- product pages ----------------
 by_handle = {p["handle"]: p for p in products}
 for p in products:
     img = localize_image(p["image"])
-    label = p.get("amazonLabel", "Buy on Amazon")
+    label = p.get("amazonLabel", "Buy on Amazon").replace("Amazon", '<span class="a">Amazon</span>')
     retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. The full boxed game is available on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
     ld = {
         "@context": "https://schema.org", "@type": "Product",
@@ -232,7 +295,7 @@ for p in products:
 {retired}
 <div class="prose">{p['descriptionHtml']}</div>
 <p style="margin-top:26px"><a class="btn amazon" href="{p['amazon']}" target="_blank" rel="noopener">{label} &rarr;</a></p>
-<p style="font-size:.85rem;color:var(--muted)">Fast shipping &middot; Easy returns &middot; Sold by Christians Like, LLC on Amazon</p>
+<p style="font-size:.85rem">Fast shipping &middot; Easy returns &middot; Sold by Christians Like, LLC on Amazon</p>
 </div>
 </div></div>
 """
@@ -257,12 +320,12 @@ for handle, title, seo, desc, members in collections:
     for h in members:
         p = by_handle[h]
         img = localize_image(p["image"])
-        cards += f"""<a class="card" href="/products/{h}"><img src="{img}" alt="{html.escape(p['title'])}" loading="lazy"><div class="pad"><h3>{html.escape(p['title'])}</h3><p>{html.escape(p['blurb'])}</p><span class="cta">View game &rarr;</span></div></a>"""
+        cards += f"""<a class="tile" href="/products/{h}"><img src="{img}" alt="{html.escape(p['title'])}" loading="lazy"><h3>{html.escape(p['title'])}</h3><p>{html.escape(p['blurb'])}</p></a>"""
     body = f"""
 <div class="wrap crumbs"><a href="/">Home</a> / {title}</div>
-<section class="wrap" style="padding-top:28px"><h1>{title}</h1><p style="max-width:640px;color:var(--muted)">{desc}</p>
+<section class="wrap" style="padding-top:28px"><h1>{title}</h1><p class="page-lead">{desc}</p>
 <div class="grid" style="margin-top:34px">{cards}</div>
-<p style="margin-top:40px"><a class="btn amazon" href="https://www.amazon.com/s?k=cards+christians+like" target="_blank" rel="noopener">See everything on Amazon &rarr;</a></p>
+<p style="margin-top:40px"><a class="btn amazon" href="https://www.amazon.com/s?k=cards+christians+like" target="_blank" rel="noopener">See everything on <span class="a">Amazon</span> &rarr;</a></p>
 </section>"""
     path = f"/collections/{handle}"
     write(path + ".html", page(seo, desc, path, body))
@@ -275,11 +338,11 @@ for a in articles:
     imgtag = f'<img src="{img}" alt="{html.escape(a["title"])}" loading="lazy">' if img else ""
     d = a["publishedAt"][:10]
     summary = a.get("summary") or ""
-    cards += f"""<a class="card" href="/blogs/news/{a['handle']}">{imgtag}<div class="pad"><h3>{html.escape(a['title'])}</h3><p>{html.escape(summary[:140])}</p><span class="cta">Read more &rarr;</span></div></a>"""
+    cards += f"""<a class="tile" href="/blogs/news/{a['handle']}">{imgtag}<h3>{html.escape(a['title'])}</h3><p>{html.escape(summary[:140])}</p></a>"""
 body = f"""
 <div class="wrap crumbs"><a href="/">Home</a> / Blog</div>
 <section class="wrap blog-list" style="padding-top:28px"><h1>News &amp; Ideas</h1>
-<p style="max-width:640px;color:var(--muted)">Game night ideas, Christian party game guides, and updates from the Cards Christians Like team.</p>
+<p class="page-lead">Game night ideas, Christian party game guides, and updates from the Cards Christians Like team.</p>
 <div class="grid" style="margin-top:34px">{cards}</div></section>"""
 write("/blogs/news.html", page("News & Game Night Ideas – Cards Christians Like",
       "Christian party game guides, game night ideas, and company updates from Cards Christians Like.", "/blogs/news", body))
@@ -304,10 +367,10 @@ for a in articles:
 <p class="meta">Published {d} &middot; Cards Christians Like</p>
 {imgtag}
 <div class="prose">{bodyhtml}</div>
-<div style="margin-top:50px;padding:30px;background:#fff;border:1px solid var(--line);border-radius:16px;max-width:760px">
+<div class="post-cta">
 <h3>Ready for game night?</h3>
 <p>Cards Christians Like, Holy Guacamole, Discernment, and Cast The First Stone are all available on Amazon with fast shipping.</p>
-<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Shop our games on Amazon &rarr;</a>
+<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Shop our games on <span class="a">Amazon</span> &rarr;</a>
 </div>
 </article>"""
     path = f"/blogs/news/{a['handle']}"
@@ -327,17 +390,14 @@ for fname in ["privacy-policy", "terms-of-service", "return-and-refund-policy"]:
     sitemap_urls.append(path)
 
 # ---------------- homepage ----------------
-featured = ["cards-christians-like", "expansion-box-vol-1", "cast-the-first-stone", "holy-guacamole", "discernment"]
-cards = ""
-for h in featured:
+other_games = ["discernment", "holy-guacamole", "cast-the-first-stone"]
+tiles = ""
+for h in other_games:
     p = by_handle[h]
     img = localize_image(p["image"])
-    cards += f"""<a class="card" href="/products/{h}"><img src="{img}" alt="{html.escape(p['title'])} Christian party game" loading="lazy"><div class="pad"><h3>{html.escape(p['title'])}</h3><p>{html.escape(p['blurb'])}</p><span class="cta">View game &rarr;</span></div></a>"""
-recent = ""
-for a in articles[:3]:
-    img = localize_image(a["image"]["url"]) if a.get("image") else None
-    imgtag = f'<img src="{img}" alt="{html.escape(a["title"])}" loading="lazy">' if img else ""
-    recent += f"""<a class="card" href="/blogs/news/{a['handle']}">{imgtag}<div class="pad"><h3>{html.escape(a['title'])}</h3><span class="cta">Read more &rarr;</span></div></a>"""
+    tiles += f"""<a class="tile" href="/products/{h}"><img src="{img}" alt="{html.escape(p['title'])} Christian party game" loading="lazy"><h3>{html.escape(p['title'])}</h3><p>{html.escape(p['blurb'])}</p></a>"""
+main_game = by_handle["cards-christians-like"]
+main_img = localize_image(main_game["image"])
 ld = [{"@context": "https://schema.org", "@type": "Organization", "name": "Cards Christians Like",
        "legalName": "Christians Like, LLC", "url": BASE, "logo": BASE + "/assets/img/favicon.png",
        "email": "hello@cardschristianslike.com",
@@ -345,28 +405,81 @@ ld = [{"@context": "https://schema.org", "@type": "Organization", "name": "Cards
                    "https://www.facebook.com/cardschristianslike", "https://www.amazon.com/dp/B0BBSGRR5X"]},
       {"@context": "https://schema.org", "@type": "WebSite", "name": "Cards Christians Like", "url": BASE}]
 body = f"""
-<div class="hero">
-<span class="pill">Now available on Amazon</span>
-<h1>It's a party game, but with convictions.</h1>
-<p class="tag">Cards Christians Like is the original Christian party game — hundreds of hilarious combinations that capitalize on Christian culture and the Bible.</p>
-<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
-<p class="note">We've moved our store to Amazon for the best prices and the fastest shipping.</p>
+<div class="home-hero"><div class="wrap">
+<h1>It's a party game, but with <em>convictions</em>.</h1>
+<p class="tag">The original Christian party game — hundreds of hilarious combinations about church, culture, and the Bible.</p>
+<a class="btn amazon" href="{main_game['amazon']}" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
+<p class="note">Our store moved to Amazon for better prices and faster shipping.</p>
+</div></div>
+<section class="play" id="play-scroll"><div class="play-sticky"><div class="wrap"><div class="split">
+<div>
+<h2 class="home-h2">The game is simple.</h2>
+<p class="big">Each round, one player reads a prompt card. Everyone else plays the funniest response card they've got. Best answer wins the round — and probably derails the Bible study.</p>
 </div>
-<section class="wrap" id="games">
-<h2>Our Games</h2>
-<p style="max-width:620px;color:var(--muted)">Five hilarious, faith-filled games for church groups, families, youth groups, and game nights. Every game ships fast from Amazon.</p>
-<div class="grid" style="margin-top:34px">{cards}</div>
-</section>
-<div class="band">
-<h2>Why Amazon?</h2>
-<p style="max-width:560px;margin:0 auto 26px;opacity:.85">Better prices, Prime shipping, and easy returns. Same games, same humor, same convictions — just faster to your door.</p>
-<a class="btn" style="background:var(--yellow);color:var(--ink)!important" href="https://www.amazon.com/s?k=cards+christians+like" target="_blank" rel="noopener">See all our games on Amazon &rarr;</a>
+<div class="play-cards" aria-label="Example cards from the game">
+<div class="pcard prompt"><span>If ____________ is wrong then I don't want to be right.</span><span class="brand">Cards Christians Like</span></div>
+<div class="answer-stack">
+<div class="pcard answer"><span>Sending memes during church.</span><span class="brand">Cards Christians Like</span></div>
+<div class="pcard answer"><span>Jesus's temple whip.</span><span class="brand">Cards Christians Like</span></div>
+<div class="pcard answer"><span>Live animals on stage during Christmas.</span><span class="brand">Cards Christians Like</span></div>
 </div>
-<section class="wrap">
-<h2>Game Night Ideas</h2>
-<div class="grid" style="margin-top:30px">{recent}</div>
-<p style="margin-top:26px"><a href="/blogs/news" style="font-weight:700">Read the blog &rarr;</a></p>
-</section>
+</div>
+</div></div></div></section>
+<script>
+(function(){{
+var sec=document.getElementById('play-scroll');
+if(!sec)return;
+var cards=[].slice.call(sec.querySelectorAll('.answer-stack .pcard'));
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+function ease(t){{return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}}
+var ticking=false;
+function update(){{
+ticking=false;
+var r=sec.getBoundingClientRect();
+var total=r.height-innerHeight;
+var p=Math.min(1,Math.max(0,-r.top/(total||1)));
+var n=cards.length;
+cards.forEach(function(c,i){{
+var t=Math.min(1,Math.max(0,p*n-i));
+var rot=75,o=0;
+if(t<=0){{rot=75;o=0}}
+else if(t<.4){{var e=ease(t/.4);rot=(1-e)*75;o=e}}
+else if(t<.6||i===n-1){{rot=0;o=1}}
+else{{var e2=ease((t-.6)/.4);rot=-e2*75;o=1-e2}}
+c.style.transform='rotate('+rot+'deg)';
+c.style.opacity=o;
+}});
+}}
+function onScroll(){{if(!ticking){{ticking=true;requestAnimationFrame(update)}}}}
+addEventListener('scroll',onScroll,{{passive:true}});
+addEventListener('resize',onScroll);
+update();
+}})();
+</script>
+<section class="buy-block"><div class="wrap">
+<div class="split">
+<div><img src="{main_img}" alt="Cards Christians Like – the original Christian party game" loading="lazy"></div>
+<div>
+<h2 class="home-h2">Buy the game.</h2>
+<p style="max-width:500px">{html.escape(main_game['blurb'])} Perfect for church groups, families, youth groups, and game nights.</p>
+<p class="price">${main_game['price']} on Amazon</p>
+<a class="btn amazon" href="{main_game['amazon']}" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
+</div>
+</div>
+</div></section>
+<section class="games-block" id="games"><div class="wrap">
+<h2 class="home-h2">More games. More laughs.</h2>
+<p class="lead">Three more hilarious, faith-filled games — every one ships fast from Amazon.</p>
+<div class="tiles">{tiles}</div>
+</div></section>
+<section class="faq"><div class="wrap"><div class="inner">
+<h2 class="home-h2">Your holy questions.</h2>
+<details><summary>Where do I buy Cards Christians Like?</summary><div class="a-body"><p>On <a href="{main_game['amazon']}" target="_blank" rel="noopener">Amazon</a>. Every game we make is there, with Prime shipping and easy returns.</p></div></details>
+<details><summary>How do you play?</summary><div class="a-body"><p>One player reads a prompt card, everyone else answers with their funniest response card. Funniest answer wins the round. That's the whole rulebook, more or less.</p></div></details>
+<details><summary>Do you sell expansions?</summary><div class="a-body"><p>We have — though availability on Amazon comes and goes. The reliable move is one of our <a href="/collections/games">three other standalone games</a>, or check <a href="https://www.amazon.com/s?k=cards+christians+like" target="_blank" rel="noopener">everything currently shipping on Amazon</a>.</p></div></details>
+<details><summary>Does it work for church groups and family night?</summary><div class="a-body"><p>That's exactly who it's for. It's written for church groups, families, and youth groups — punchy enough to be funny, clean enough that your grandma stays in the room.</p></div></details>
+<details><summary>What happened to the old store?</summary><div class="a-body"><p>We moved everything to Amazon for better prices, faster shipping, and easier returns. Same games, same humor, same convictions.</p></div></details>
+</div></div></section>
 """
 write("/index.html", page("Cards Christians Like – It's a party game but with convictions.",
       "The original Christian party game. Hundreds of hilarious combinations that capitalize on Christian culture and the Bible. Now available on Amazon.", "/index", body, ld))
@@ -375,8 +488,8 @@ sitemap_urls.insert(0, "/")
 # ---------------- 404 ----------------
 body = """<section class="wrap" style="text-align:center;padding:110px 20px">
 <h1>Well, this page hath passed away.</h1>
-<p style="color:var(--muted)">The page you're looking for isn't here — but the games definitely are.</p>
-<p style="margin-top:24px"><a class="btn" href="/">Back to home</a>&nbsp;&nbsp;<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Shop on Amazon</a></p></section>"""
+<p>The page you're looking for isn't here — but the games definitely are.</p>
+<p style="margin-top:24px"><a class="btn" href="/">Back to home</a>&nbsp;&nbsp;<a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a></p></section>"""
 write("/404.html", page("Page not found – Cards Christians Like", "Page not found.", "/404", body))
 
 # ---------------- sitemap + robots ----------------
