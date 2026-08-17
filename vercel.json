@@ -1,0 +1,167 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/products/trash-theology-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/gen-z-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/jesus-loves-you-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/pop-culture-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/worship-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/cards-christians-hide-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/dating-expansion-pack",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/your-other-cards-storage-box-1",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/ccl-expansion-box-vol-1",
+      "destination": "/products/expansion-box-vol-1",
+      "permanent": true
+    },
+    {
+      "source": "/products/shipping-protection",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/collections/special",
+      "destination": "/collections/games",
+      "permanent": true
+    },
+    {
+      "source": "/collections/holiday-bundles-:rest*",
+      "destination": "/collections/games",
+      "permanent": true
+    },
+    {
+      "source": "/collections/all",
+      "destination": "/collections/games",
+      "permanent": true
+    },
+    {
+      "source": "/password",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/cart",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/account/:rest*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/search",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/collections",
+      "destination": "/collections/games",
+      "permanent": true
+    },
+    {
+      "source": "/blogs",
+      "destination": "/blogs/news",
+      "permanent": true
+    },
+    {
+      "source": "/pages/collabs",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/collabs",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/discount/:code*",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/blakealexiss",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/stickemup",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/ng0charlie",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/heavenlyminded",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/setupedia",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/ksenia",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/pauldal",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    },
+    {
+      "source": "/teresitaroses",
+      "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
