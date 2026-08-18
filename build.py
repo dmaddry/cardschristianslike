@@ -183,7 +183,7 @@ footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;co
 .faq details[open] summary:after{content:"\\2212"}
 .faq .a-body{padding:0 0 26px;color:rgba(255,255,255,.75);max-width:680px}
 .faq .a-body a{font-weight:600;color:var(--yellow)}
-@media(max-width:760px){header.site .wrap{height:64px}.logo img{height:38px}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}}
+@media(max-width:760px){header.site .wrap{height:60px;gap:12px}.logo img{height:34px}nav.main{flex-wrap:nowrap;gap:14px}nav.main .btn{padding:9px 16px;font-size:.8rem}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}}
 """
 
 def page(title, desc, path, body, jsonld=None, ogimg=None):
@@ -213,7 +213,6 @@ def page(title, desc, path, body, jsonld=None, ogimg=None):
 <header class="site"><div class="wrap">
 <a class="logo" href="/"><img src="/assets/img/christians-like-logo.png" alt="Christians Like – home"></a>
 <nav class="main">
-<a href="/collections/games">Shop</a>
 <a class="btn amazon" href="https://www.amazon.com/dp/B0BBSGRR5X" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
 </nav>
 </div></header>
@@ -273,7 +272,10 @@ sitemap_urls = []
 
 # ---------------- product pages ----------------
 by_handle = {p["handle"]: p for p in products}
+HIDDEN_PRODUCTS = {"expansion-box-vol-1"}  # pulled from the site for now (Amazon availability)
 for p in products:
+    if p["handle"] in HIDDEN_PRODUCTS:
+        continue
     img = localize_image(p["image"])
     label = p.get("amazonLabel", "Buy on Amazon").replace("Amazon", '<span class="a">Amazon</span>')
     retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. The full boxed game is available on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
@@ -307,9 +309,9 @@ for p in products:
 # ---------------- collections ----------------
 collections = [
     ("games", "Games", "Christian Card Games For Family Fun",
-     "Every game we make — hilarious, faith-filled card games for families, youth groups, and game nights.", ["cards-christians-like", "expansion-box-vol-1", "cast-the-first-stone", "holy-guacamole", "discernment"]),
+     "Every game we make — hilarious, faith-filled card games for families, youth groups, and game nights.", ["cards-christians-like", "cast-the-first-stone", "holy-guacamole", "discernment"]),
     ("expansions-1", "Expansions", "Christian Card Game Expansions For Family Fun",
-     "Expansions for Cards Christians Like — hundreds of new cards to keep game night fresh.", ["expansion-box-vol-1", "ccl-expansion-bundle", "all-expansions-print-at-home", "print-at-home-new-expansions"]),
+     "Expansions for Cards Christians Like — hundreds of new cards to keep game night fresh.", ["ccl-expansion-bundle", "all-expansions-print-at-home", "print-at-home-new-expansions"]),
     ("print-at-home", "Print at Home", "Printable Christian Card Games For Church Groups",
      "Our retired print-at-home editions — every game is now available as a full boxed set on Amazon.", ["cards-christians-like-print-at-home", "copy-of-print-at-home-cards-christians-like", "all-expansions-print-at-home", "print-at-home-new-expansions"]),
     ("holy-guacamole-bundle", "Holy Guacamole Expansions", "Holy Guacamole Expansions",
@@ -501,15 +503,17 @@ write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
 # ---------------- vercel.json ----------------
 redirects = [
     # deleted products that still have backlinks -> closest live page
-    {"source": "/products/trash-theology-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/gen-z-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/jesus-loves-you-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/pop-culture-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/worship-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/cards-christians-hide-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/dating-expansion-pack", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/your-other-cards-storage-box-1", "destination": "/products/expansion-box-vol-1", "permanent": True},
-    {"source": "/products/ccl-expansion-box-vol-1", "destination": "/products/expansion-box-vol-1", "permanent": True},
+    {"source": "/products/trash-theology-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/gen-z-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/jesus-loves-you-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/pop-culture-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/worship-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/cards-christians-hide-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/dating-expansion-pack", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/your-other-cards-storage-box-1", "destination": "/collections/games", "permanent": True},
+    {"source": "/products/ccl-expansion-box-vol-1", "destination": "/collections/games", "permanent": True},
+    # Expansion Box Vol. 1 pulled from the site for now
+    {"source": "/products/expansion-box-vol-1", "destination": "/collections/games", "permanent": False},
     {"source": "/products/shipping-protection", "destination": "/", "permanent": True},
     # retired collections
     {"source": "/collections/special", "destination": "/collections/games", "permanent": True},
