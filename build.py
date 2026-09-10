@@ -13,8 +13,7 @@ ASSETS.mkdir(parents=True)
 products = json.loads((ROOT / "data/products.json").read_text())
 
 # Old Shopify digital-download URLs were unique per order. Known file IDs
-# from customer emails map to the matching PDF; every other /a/downloads
-# path lands on /downloads so past buyers still get their files.
+# from purchase emails map to that purchase's PDF only — never the full set.
 PRINT_DOWNLOADS = [
     {
         "handle": "all-expansions-print-at-home",
@@ -45,8 +44,6 @@ PRINT_DOWNLOADS = [
         "url": "https://www.dropbox.com/scl/fi/qrz9mjwervdzi5pqt1bjh/CCL-PrintAtHome-BaseGame.pdf?rlkey=l1fax7871a1jrzcb08t3zfnda&dl=1",
     },
 ]
-DOWNLOAD_BY_HANDLE = {d["handle"]: d for d in PRINT_DOWNLOADS}
-
 articles = []
 for b in ["articles_batch1.json", "articles_batch2.json"]:
     d = json.loads((ROOT / "content" / b).read_text())
@@ -156,13 +153,6 @@ section{padding:64px 0}
 .product-hero{padding:72px 0}
 .price{font-weight:700;color:var(--ink);font-size:1.15rem;margin:6px 0 18px}
 .retired-note{background:var(--yellow);border-radius:6px;padding:14px 18px;font-size:.92rem;margin:18px 0}
-.dl-list{display:grid;gap:18px;margin-top:36px;max-width:800px}
-.dl-card{display:flex;gap:18px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.dl-card img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex-shrink:0}
-.dl-card h3{font-size:1.12rem;margin:0 0 4px}
-.dl-card p{margin:0;font-size:.9rem;color:var(--muted)}
-.dl-card .btn{margin-left:auto;flex-shrink:0}
-@media(max-width:760px){.dl-card{flex-wrap:wrap}.dl-card .btn{margin-left:0;width:100%;text-align:center}}
 .prose{max-width:760px}
 .prose img{margin:18px 0}
 .prose h2{margin-top:1.6em;font-size:1.8rem}.prose h3{margin-top:1.4em;font-size:1.3rem}
@@ -322,19 +312,8 @@ for p in products:
         continue
     img = localize_image(p["image"])
     label = p.get("amazonLabel", "Buy on Amazon").replace("Amazon", '<span class="a">Amazon</span>')
-    dl = DOWNLOAD_BY_HANDLE.get(p["handle"])
-    if p.get("retired") and dl:
-        retired = (
-            '<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. '
-            "If you already purchased it, you can still download the PDF below. The boxed game is on Amazon with fast Prime shipping.</div>"
-        )
-        buttons = (
-            f'<p style="margin-top:26px"><a class="btn" href="{html.escape(dl["url"])}">Download {html.escape(dl["filename"])}</a>'
-            f'&nbsp;&nbsp;<a class="btn amazon" href="{p["amazon"]}" target="_blank" rel="noopener">{label} &rarr;</a></p>'
-        )
-    else:
-        retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. The full boxed game is available on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
-        buttons = f'<p style="margin-top:26px"><a class="btn amazon" href="{p["amazon"]}" target="_blank" rel="noopener">{label} &rarr;</a></p>'
+    retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. If you already purchased it, use the download link from your original email — it only unlocks the file you bought. The boxed game is on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
+    buttons = f'<p style="margin-top:26px"><a class="btn amazon" href="{p["amazon"]}" target="_blank" rel="noopener">{label} &rarr;</a></p>'
     ld = {
         "@context": "https://schema.org", "@type": "Product",
         "name": p["title"], "image": BASE + img if img.startswith("/") else img,
@@ -543,29 +522,18 @@ write("/index.html", page("Cards Christians Like – It's a party game but with 
       "The original Christian party game. Hundreds of hilarious combinations that capitalize on Christian culture and the Bible. Now available on Amazon.", "/index", body, ld))
 sitemap_urls.insert(0, "/")
 
-# ---------------- print-at-home downloads (old Shopify /a/downloads links) ----------------
-cards = ""
-for d in PRINT_DOWNLOADS:
-    p = by_handle[d["handle"]]
-    img = localize_image(p["image"])
-    cards += (
-        f'<div class="dl-card"><img src="{img}" alt="{html.escape(p["title"])}">'
-        f'<div><h3>{html.escape(p["title"])}</h3>'
-        f'<p>{html.escape(d["filename"])} &middot; {html.escape(d["size"])}</p></div>'
-        f'<a class="btn" href="{html.escape(d["url"])}">Download</a></div>'
-    )
-body = f"""
+# ---------------- print-at-home download help (unknown / expired Shopify tokens) ----------------
+body = """
 <div class="wrap crumbs"><a href="/">Home</a> / Downloads</div>
 <section class="wrap" style="padding-top:28px;padding-bottom:80px">
-<h1>Your print-at-home downloads</h1>
-<p class="page-lead">The old Shopify download links stopped working when we moved the store. If you purchased a print-at-home edition, grab the PDF here.</p>
-<div class="dl-list">{cards}</div>
-<p class="page-lead" style="margin-top:36px">These editions are no longer sold. The boxed games ship fast from Amazon.</p>
+<h1>Your print-at-home download</h1>
+<p class="page-lead">Each purchase email unlocks only the file you bought. If the download didn't start, the link in that email may be one we don't have on file.</p>
+<p class="page-lead">Email <a href="mailto:hello@cardschristianslike.com?subject=Print-at-home%20download">hello@cardschristianslike.com</a> with which print-at-home product you purchased and we'll send that file — not the whole catalog.</p>
 </section>
 """
 write("/downloads.html", page(
-    "Print-at-home downloads – Cards Christians Like",
-    "Download your Cards Christians Like print-at-home PDFs. Old Shopify download links now land here.",
+    "Print-at-home download – Cards Christians Like",
+    "Get help with a Cards Christians Like print-at-home download from your original purchase email.",
     "/downloads", body, noindex=True))
 
 # ---------------- 404 ----------------
@@ -620,8 +588,8 @@ redirects = [
     {"source": "/pauldal", "destination": "https://www.amazon.com/dp/B0BBSGRR5X", "permanent": False},
     {"source": "/teresitaroses", "destination": "https://www.amazon.com/dp/B0BBSGRR5X", "permanent": False},
 ]
-# Restore Shopify digital-download emails: known file IDs go to the PDF,
-# everything else under /a/downloads lands on the recovery page.
+# Restore Shopify digital-download emails: known file IDs go to that
+# purchase's PDF only. Unknown tokens go to a help page, not the catalog.
 for d in PRINT_DOWNLOADS:
     for sid in d["shopify_ids"]:
         redirects.append({"source": f"/a/downloads/-/{sid}", "destination": d["url"], "permanent": False})
