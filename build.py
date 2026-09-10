@@ -173,7 +173,7 @@ footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;co
 .blog-list .tile img{aspect-ratio:16/9}
 .blog-list .tile h3{font-size:1.25rem}
 /* ---- homepage (CAH-style layout, CCL colors) ---- */
-.home-hero{background:#fff;color:var(--ink);padding:84px 0 150px}
+.home-hero{background:#fff;color:var(--ink);padding:84px 0}
 .home-hero h1{font-size:clamp(2.8rem,8vw,5.6rem);max-width:1000px;margin:0 0 .3em}
 .home-hero h1 em{font-style:normal;box-shadow:inset 0 -0.28em var(--yellow)}
 .home-hero p.tag{font-size:clamp(1.15rem,2.4vw,1.55rem);color:var(--ink);margin:0 0 2em;max-width:680px}
@@ -448,51 +448,6 @@ body = f"""
 <a class="btn amazon" href="{main_game['amazon']}" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
 <p class="note">Our store moved to Amazon for better prices and faster shipping.</p>
 </div></div>
-<section class="play" id="play-scroll"><div class="play-sticky"><div class="wrap"><div class="split">
-<div>
-<h2 class="home-h2">The game is simple.</h2>
-<p class="big">Each round, one player reads a prompt card. Everyone else plays the funniest response card they've got. Best answer wins the round — and probably derails the Bible study.</p>
-</div>
-<div class="play-cards" aria-label="Example cards from the game">
-<div class="pcard prompt"><span>If ____________ is wrong then I don't want to be right.</span><span class="brand">Cards Christians Like</span></div>
-<div class="answer-stack">
-<div class="pcard answer"><span>Sending memes during church.</span><span class="brand">Cards Christians Like</span></div>
-<div class="pcard answer"><span>Jesus's temple whip.</span><span class="brand">Cards Christians Like</span></div>
-<div class="pcard answer"><span>Live animals on stage during Christmas.</span><span class="brand">Cards Christians Like</span></div>
-</div>
-</div>
-</div></div></div></section>
-<script>
-(function(){{
-var sec=document.getElementById('play-scroll');
-if(!sec)return;
-var cards=[].slice.call(sec.querySelectorAll('.answer-stack .pcard'));
-if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-function ease(t){{return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}}
-var ticking=false;
-function update(){{
-ticking=false;
-var r=sec.getBoundingClientRect();
-var total=r.height-innerHeight;
-var p=Math.min(1,Math.max(0,-r.top/(total||1)));
-var n=cards.length;
-cards.forEach(function(c,i){{
-var t=Math.min(1,Math.max(0,p*n-i));
-var rot=75,o=0;
-if(t<=0){{rot=75;o=0}}
-else if(t<.4){{var e=ease(t/.4);rot=(1-e)*75;o=e}}
-else if(t<.6||i===n-1){{rot=0;o=1}}
-else{{var e2=ease((t-.6)/.4);rot=-e2*75;o=1-e2}}
-c.style.transform='rotate('+rot+'deg)';
-c.style.opacity=o;
-}});
-}}
-function onScroll(){{if(!ticking){{ticking=true;requestAnimationFrame(update)}}}}
-addEventListener('scroll',onScroll,{{passive:true}});
-addEventListener('resize',onScroll);
-update();
-}})();
-</script>
 <section class="buy-block"><div class="wrap">
 <div class="split">
 <div><img src="{main_img}" alt="Cards Christians Like – the original Christian party game" loading="lazy"></div>
