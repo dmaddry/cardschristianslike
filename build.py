@@ -120,7 +120,7 @@ CSS = """
 @font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-medium.woff2) format('woff2');font-weight:500 600;font-style:normal;font-display:swap}
 @font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-bold.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Gotham';src:url(/assets/fonts/gotham-ultra.woff2) format('woff2');font-weight:800 900;font-style:normal;font-display:swap}
-:root{--teal:#108474;--teal-d:#0b6154;--blue:#347DEC;--yellow:#fbcd0a;--ink:#131b22;--muted:#5a6672;--cream:#faf7f2;--line:#e8e2d8;--amz:#ff9900}
+:root{--teal:#108474;--teal-d:#0b6154;--blue:#3F8ED5;--yellow:#fbcd0a;--ink:#131b22;--muted:#5a6672;--cream:#faf7f2;--line:#e8e2d8;--amz:#ff9900}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;font-family:'Gotham',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,sans-serif;color:var(--ink);background:#fff;line-height:1.65}
 h1,h2,h3,h4{font-family:inherit;font-weight:800;line-height:1.08;letter-spacing:-.02em;margin:0 0 .5em}
@@ -192,6 +192,16 @@ footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;co
 .answer-stack{position:relative;width:225px;aspect-ratio:5/7;transform:rotate(3deg) translateY(16px)}
 .answer-stack .pcard{position:absolute;inset:0;opacity:0;transform:rotate(75deg);transform-origin:50% 90%;will-change:transform,opacity}
 .answer-stack .pcard:first-child{transform:none;opacity:1}
+/* card ticker + value stack (between hero and buy) */
+.ticker{background:var(--blue);color:#fff;padding:56px 0 64px;overflow:hidden}
+.ticker-track{display:flex;width:max-content;animation:ticker 80s linear infinite}
+.ticker-set{display:flex;gap:26px;padding-right:26px}
+.ticker .pcard.answer{width:236px;flex:none;font-size:1.2rem;line-height:1.25;padding:22px 20px;box-shadow:0 18px 40px rgba(0,0,0,.22)}
+.ticker .pcard.answer .brand{font-size:.62rem}
+.ticker-set .pcard:nth-child(odd){transform:rotate(-2.5deg)}
+.ticker-set .pcard:nth-child(even){transform:rotate(2.5deg) translateY(12px)}
+@keyframes ticker{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.ticker-track{animation:none}}
 .buy-block{padding:110px 0}
 .buy-block .split{align-items:center}
 .buy-block img{border:1px solid var(--line);border-radius:8px}
@@ -216,7 +226,7 @@ footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;co
 .faq details[open] summary:after{content:"\\2212"}
 .faq .a-body{padding:0 0 26px;color:rgba(255,255,255,.75);max-width:680px}
 .faq .a-body a{font-weight:600;color:var(--yellow)}
-@media(max-width:760px){header.site .wrap{height:60px;gap:12px}.logo img{height:34px}nav.main{flex-wrap:nowrap;gap:14px}nav.main .btn{padding:9px 16px;font-size:.8rem}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}}
+@media(max-width:760px){header.site .wrap{height:60px;gap:12px}.logo img{height:34px}nav.main{flex-wrap:nowrap;gap:14px}nav.main .btn{padding:9px 16px;font-size:.8rem}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}.ticker{padding:40px 0 48px}.ticker-set{gap:16px;padding-right:16px}.ticker .pcard.answer{width:170px;font-size:.88rem;padding:14px}.ticker .pcard.answer .brand{font-size:.48rem}}
 """
 
 def page(title, desc, path, body, jsonld=None, ogimg=None, noindex=False):
@@ -435,6 +445,44 @@ for h in other_games:
     tiles += f"""<a class="tile" href="/products/{h}"><img src="{img}" alt="{html.escape(p['title'])} Christian party game" loading="lazy"><h3>{html.escape(p['title'])}</h3><p>{html.escape(p['blurb'])}</p></a>"""
 main_game = by_handle["cards-christians-like"]
 main_img = localize_image(main_game["image"])
+# Real response cards from the base game + expansions (short ones read best in motion).
+TICKER_CARDS = [
+    "A gluten-free last supper.",
+    "Impressing my church crush by stacking chairs.",
+    "Walking into church late with my $8 latte.",
+    "Wet gum under the pew.",
+    "Calling Chick-fil-A \u201cGod\u2019s chicken.\u201d",
+    "Napping during the sermon.",
+    "Liquid courage from the Lord\u2019s supper.",
+    "Back row baptists.",
+    "Turning Expo markers into lightsabers.",
+    "Punny church signs.",
+    "Impressing Jesus by rounding up my tithe.",
+    "Faking sick on Sunday morning.",
+    "Middle schoolers wearing too much AXE body spray.",
+    "Consistently using Jeremiah 29:11 out of context.",
+    "Sending memes during church.",
+    "Asking Jesus into my heart again.",
+    "Stealing snacks from the nursery.",
+    "Noah\u2019s Ark in Kentucky.",
+    "Dropping the God card when you get pulled over.",
+    "Wearing flip flops to church.",
+    "Vaping in the church parking lot.",
+    "Leaving room for Jesus.",
+    "Cringy Christian t-shirts.",
+    "My YouVersion streak.",
+    "Live animals onstage at Christmas.",
+]
+ticker_set = "".join(
+    f'<div class="pcard answer"><span>{html.escape(c)}</span><span class="brand">Cards Christians Like</span></div>'
+    for c in TICKER_CARDS
+)
+ticker_html = (
+    '<div class="ticker-track">'
+    f'<div class="ticker-set">{ticker_set}</div>'
+    f'<div class="ticker-set" aria-hidden="true">{ticker_set}</div>'
+    '</div>'
+)
 ld = [{"@context": "https://schema.org", "@type": "Organization", "name": "Cards Christians Like",
        "legalName": "Christians Like, LLC", "url": BASE, "logo": BASE + "/assets/img/favicon.png",
        "email": "hello@cardschristianslike.com",
@@ -448,6 +496,9 @@ body = f"""
 <a class="btn amazon" href="{main_game['amazon']}" target="_blank" rel="noopener">Buy on <span class="a">Amazon</span> &rarr;</a>
 <p class="note">Our store moved to Amazon for better prices and faster shipping.</p>
 </div></div>
+<section class="ticker" aria-label="Sample response cards">
+{ticker_html}
+</section>
 <section class="buy-block"><div class="wrap">
 <div class="split">
 <div><img src="{main_img}" alt="Cards Christians Like – the original Christian party game" loading="lazy"></div>
