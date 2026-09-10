@@ -52,6 +52,13 @@ section{padding:64px 0}
 .product-hero{padding:72px 0}
 .price{font-weight:700;color:var(--ink);font-size:1.15rem;margin:6px 0 18px}
 .retired-note{background:var(--yellow);border-radius:6px;padding:14px 18px;font-size:.92rem;margin:18px 0}
+.dl-list{display:grid;gap:18px;margin-top:36px;max-width:800px}
+.dl-card{display:flex;gap:18px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.dl-card img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex-shrink:0}
+.dl-card h3{font-size:1.12rem;margin:0 0 4px}
+.dl-card p{margin:0;font-size:.9rem;color:var(--muted)}
+.dl-card .btn{margin-left:auto;flex-shrink:0}
+@media(max-width:760px){.dl-card{flex-wrap:wrap}.dl-card .btn{margin-left:0;width:100%;text-align:center}}
 .prose{max-width:760px}
 .prose img{margin:18px 0}
 .prose h2{margin-top:1.6em;font-size:1.8rem}.prose h3{margin-top:1.4em;font-size:1.3rem}

@@ -156,6 +156,56 @@
       "source": "/teresitaroses",
       "destination": "https://www.amazon.com/dp/B0BBSGRR5X",
       "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/4fe75260e5ead861",
+      "destination": "https://www.dropbox.com/scl/fi/cpuzcppcy9gcoew7r5r9t/CCL-PrintAtHome-Expansions.pdf?rlkey=uksh2xgg3regvkvydywnahwfx&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/4fe75260e5ead861/:token*",
+      "destination": "https://www.dropbox.com/scl/fi/cpuzcppcy9gcoew7r5r9t/CCL-PrintAtHome-Expansions.pdf?rlkey=uksh2xgg3regvkvydywnahwfx&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/f4ce3d76b613a3e5",
+      "destination": "https://www.dropbox.com/scl/fi/qx1l7x21r0wiss99z8hds/CCL-PrintAtHome-Expansions-New.pdf?rlkey=ipsvtxkofixg1mdm193gahmcp&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/f4ce3d76b613a3e5/:token*",
+      "destination": "https://www.dropbox.com/scl/fi/qx1l7x21r0wiss99z8hds/CCL-PrintAtHome-Expansions-New.pdf?rlkey=ipsvtxkofixg1mdm193gahmcp&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/8f0808a24963439a",
+      "destination": "https://www.dropbox.com/scl/fi/vnwd02r88iwkuz5mofwcj/CTFS-PrintAtHome.pdf?rlkey=locjlnulzb5axhl0ghmstkqoi&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/8f0808a24963439a/:token*",
+      "destination": "https://www.dropbox.com/scl/fi/vnwd02r88iwkuz5mofwcj/CTFS-PrintAtHome.pdf?rlkey=locjlnulzb5axhl0ghmstkqoi&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/5a333a58253655f7",
+      "destination": "https://www.dropbox.com/scl/fi/qrz9mjwervdzi5pqt1bjh/CCL-PrintAtHome-BaseGame.pdf?rlkey=l1fax7871a1jrzcb08t3zfnda&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/-/5a333a58253655f7/:token*",
+      "destination": "https://www.dropbox.com/scl/fi/qrz9mjwervdzi5pqt1bjh/CCL-PrintAtHome-BaseGame.pdf?rlkey=l1fax7871a1jrzcb08t3zfnda&dl=1",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads",
+      "destination": "/downloads",
+      "permanent": false
+    },
+    {
+      "source": "/a/downloads/:path*",
+      "destination": "/downloads",
+      "permanent": false
     }
   ],
   "headers": [

@@ -11,6 +11,42 @@ shutil.rmtree(DIST, ignore_errors=True)
 ASSETS.mkdir(parents=True)
 
 products = json.loads((ROOT / "data/products.json").read_text())
+
+# Old Shopify digital-download URLs were unique per order. Known file IDs
+# from customer emails map to the matching PDF; every other /a/downloads
+# path lands on /downloads so past buyers still get their files.
+PRINT_DOWNLOADS = [
+    {
+        "handle": "all-expansions-print-at-home",
+        "filename": "CCL-PrintAtHome-Expansions.pdf",
+        "size": "42 MB",
+        "shopify_ids": ["4fe75260e5ead861"],
+        "url": "https://www.dropbox.com/scl/fi/cpuzcppcy9gcoew7r5r9t/CCL-PrintAtHome-Expansions.pdf?rlkey=uksh2xgg3regvkvydywnahwfx&dl=1",
+    },
+    {
+        "handle": "print-at-home-new-expansions",
+        "filename": "CCL-PrintAtHome-Expansions-New.pdf",
+        "size": "819 KB",
+        "shopify_ids": ["f4ce3d76b613a3e5"],
+        "url": "https://www.dropbox.com/scl/fi/qx1l7x21r0wiss99z8hds/CCL-PrintAtHome-Expansions-New.pdf?rlkey=ipsvtxkofixg1mdm193gahmcp&dl=1",
+    },
+    {
+        "handle": "copy-of-print-at-home-cards-christians-like",
+        "filename": "CTFS-PrintAtHome.pdf",
+        "size": "574 KB",
+        "shopify_ids": ["8f0808a24963439a"],
+        "url": "https://www.dropbox.com/scl/fi/vnwd02r88iwkuz5mofwcj/CTFS-PrintAtHome.pdf?rlkey=locjlnulzb5axhl0ghmstkqoi&dl=1",
+    },
+    {
+        "handle": "cards-christians-like-print-at-home",
+        "filename": "CCL-PrintAtHome-BaseGame.pdf",
+        "size": "98 MB",
+        "shopify_ids": ["5a333a58253655f7"],
+        "url": "https://www.dropbox.com/scl/fi/qrz9mjwervdzi5pqt1bjh/CCL-PrintAtHome-BaseGame.pdf?rlkey=l1fax7871a1jrzcb08t3zfnda&dl=1",
+    },
+]
+DOWNLOAD_BY_HANDLE = {d["handle"]: d for d in PRINT_DOWNLOADS}
+
 articles = []
 for b in ["articles_batch1.json", "articles_batch2.json"]:
     d = json.loads((ROOT / "content" / b).read_text())
@@ -120,6 +156,13 @@ section{padding:64px 0}
 .product-hero{padding:72px 0}
 .price{font-weight:700;color:var(--ink);font-size:1.15rem;margin:6px 0 18px}
 .retired-note{background:var(--yellow);border-radius:6px;padding:14px 18px;font-size:.92rem;margin:18px 0}
+.dl-list{display:grid;gap:18px;margin-top:36px;max-width:800px}
+.dl-card{display:flex;gap:18px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.dl-card img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex-shrink:0}
+.dl-card h3{font-size:1.12rem;margin:0 0 4px}
+.dl-card p{margin:0;font-size:.9rem;color:var(--muted)}
+.dl-card .btn{margin-left:auto;flex-shrink:0}
+@media(max-width:760px){.dl-card{flex-wrap:wrap}.dl-card .btn{margin-left:0;width:100%;text-align:center}}
 .prose{max-width:760px}
 .prose img{margin:18px 0}
 .prose h2{margin-top:1.6em;font-size:1.8rem}.prose h3{margin-top:1.4em;font-size:1.3rem}
@@ -186,11 +229,12 @@ footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;co
 @media(max-width:760px){header.site .wrap{height:60px;gap:12px}.logo img{height:34px}nav.main{flex-wrap:nowrap;gap:14px}nav.main .btn{padding:9px 16px;font-size:.8rem}.home-hero{padding:70px 0 64px}.play-cards{gap:18px}.pcard{width:150px;border-radius:12px;padding:14px;font-size:.74rem;line-height:1.3}.pcard .brand{font-size:.46rem}.answer-stack{width:150px}}
 """
 
-def page(title, desc, path, body, jsonld=None, ogimg=None):
+def page(title, desc, path, body, jsonld=None, ogimg=None, noindex=False):
     canonical = BASE + (path if path != "/index" else "/")
     canonical = canonical.replace(".html", "")
     ld = f'<script type="application/ld+json">{json.dumps(jsonld)}</script>' if jsonld else ""
     og = f'<meta property="og:image" content="{ogimg}">' if ogimg else ""
+    robots = '<meta name="robots" content="noindex, nofollow">\n' if noindex else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -198,7 +242,7 @@ def page(title, desc, path, body, jsonld=None, ogimg=None):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
-<link rel="canonical" href="{canonical}">
+{robots}<link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{html.escape(title)}">
 <meta property="og:description" content="{html.escape(desc)}">
 <meta property="og:type" content="website">
@@ -278,7 +322,19 @@ for p in products:
         continue
     img = localize_image(p["image"])
     label = p.get("amazonLabel", "Buy on Amazon").replace("Amazon", '<span class="a">Amazon</span>')
-    retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. The full boxed game is available on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
+    dl = DOWNLOAD_BY_HANDLE.get(p["handle"])
+    if p.get("retired") and dl:
+        retired = (
+            '<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. '
+            "If you already purchased it, you can still download the PDF below. The boxed game is on Amazon with fast Prime shipping.</div>"
+        )
+        buttons = (
+            f'<p style="margin-top:26px"><a class="btn" href="{html.escape(dl["url"])}">Download {html.escape(dl["filename"])}</a>'
+            f'&nbsp;&nbsp;<a class="btn amazon" href="{p["amazon"]}" target="_blank" rel="noopener">{label} &rarr;</a></p>'
+        )
+    else:
+        retired = f'<div class="retired-note"><strong>Heads up:</strong> the print-at-home edition has been retired. The full boxed game is available on Amazon with fast Prime shipping.</div>' if p.get("retired") else ""
+        buttons = f'<p style="margin-top:26px"><a class="btn amazon" href="{p["amazon"]}" target="_blank" rel="noopener">{label} &rarr;</a></p>'
     ld = {
         "@context": "https://schema.org", "@type": "Product",
         "name": p["title"], "image": BASE + img if img.startswith("/") else img,
@@ -296,7 +352,7 @@ for p in products:
 <p class="price">${p['price']} &middot; Sold on Amazon</p>
 {retired}
 <div class="prose">{p['descriptionHtml']}</div>
-<p style="margin-top:26px"><a class="btn amazon" href="{p['amazon']}" target="_blank" rel="noopener">{label} &rarr;</a></p>
+{buttons}
 <p style="font-size:.85rem">Fast shipping &middot; Easy returns &middot; Sold by Christians Like, LLC on Amazon</p>
 </div>
 </div></div>
@@ -487,6 +543,31 @@ write("/index.html", page("Cards Christians Like – It's a party game but with 
       "The original Christian party game. Hundreds of hilarious combinations that capitalize on Christian culture and the Bible. Now available on Amazon.", "/index", body, ld))
 sitemap_urls.insert(0, "/")
 
+# ---------------- print-at-home downloads (old Shopify /a/downloads links) ----------------
+cards = ""
+for d in PRINT_DOWNLOADS:
+    p = by_handle[d["handle"]]
+    img = localize_image(p["image"])
+    cards += (
+        f'<div class="dl-card"><img src="{img}" alt="{html.escape(p["title"])}">'
+        f'<div><h3>{html.escape(p["title"])}</h3>'
+        f'<p>{html.escape(d["filename"])} &middot; {html.escape(d["size"])}</p></div>'
+        f'<a class="btn" href="{html.escape(d["url"])}">Download</a></div>'
+    )
+body = f"""
+<div class="wrap crumbs"><a href="/">Home</a> / Downloads</div>
+<section class="wrap" style="padding-top:28px;padding-bottom:80px">
+<h1>Your print-at-home downloads</h1>
+<p class="page-lead">The old Shopify download links stopped working when we moved the store. If you purchased a print-at-home edition, grab the PDF here.</p>
+<div class="dl-list">{cards}</div>
+<p class="page-lead" style="margin-top:36px">These editions are no longer sold. The boxed games ship fast from Amazon.</p>
+</section>
+"""
+write("/downloads.html", page(
+    "Print-at-home downloads – Cards Christians Like",
+    "Download your Cards Christians Like print-at-home PDFs. Old Shopify download links now land here.",
+    "/downloads", body, noindex=True))
+
 # ---------------- 404 ----------------
 body = """<section class="wrap" style="text-align:center;padding:110px 20px">
 <h1>Well, this page hath passed away.</h1>
@@ -539,8 +620,18 @@ redirects = [
     {"source": "/pauldal", "destination": "https://www.amazon.com/dp/B0BBSGRR5X", "permanent": False},
     {"source": "/teresitaroses", "destination": "https://www.amazon.com/dp/B0BBSGRR5X", "permanent": False},
 ]
+# Restore Shopify digital-download emails: known file IDs go to the PDF,
+# everything else under /a/downloads lands on the recovery page.
+for d in PRINT_DOWNLOADS:
+    for sid in d["shopify_ids"]:
+        redirects.append({"source": f"/a/downloads/-/{sid}", "destination": d["url"], "permanent": False})
+        redirects.append({"source": f"/a/downloads/-/{sid}/:token*", "destination": d["url"], "permanent": False})
+redirects.append({"source": "/a/downloads", "destination": "/downloads", "permanent": False})
+redirects.append({"source": "/a/downloads/:path*", "destination": "/downloads", "permanent": False})
 vercel = {"cleanUrls": True, "trailingSlash": False, "redirects": redirects,
           "headers": [{"source": "/assets/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]}]}
-(DIST / "vercel.json").write_text(json.dumps(vercel, indent=2))
+vercel_json = json.dumps(vercel, indent=2)
+(DIST / "vercel.json").write_text(vercel_json)
+(ROOT / "vercel.json").write_text(vercel_json)
 print("  + /vercel.json")
 print(f"\nDone. {len(sitemap_urls)} pages, {len(list(ASSETS.iterdir()))} images.")
